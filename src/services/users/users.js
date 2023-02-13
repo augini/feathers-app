@@ -14,6 +14,7 @@ import {
 } from './users.schema.js'
 import { UserService, getOptions } from './users.class.js'
 import { userPath, userMethods } from './users.shared.js'
+import { logRuntime } from '../../hooks/log-runtime.js'
 
 export * from './users.class.js'
 export * from './users.schema.js'
@@ -30,7 +31,11 @@ export const user = (app) => {
   // Initialize hooks
   app.service(userPath).hooks({
     around: {
-      all: [schemaHooks.resolveExternal(userExternalResolver), schemaHooks.resolveResult(userResolver)],
+      all: [
+        logRuntime,
+        schemaHooks.resolveExternal(userExternalResolver),
+        schemaHooks.resolveResult(userResolver)
+      ],
       find: [authenticate('jwt')],
       get: [authenticate('jwt')],
       create: [],

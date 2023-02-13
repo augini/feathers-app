@@ -14,7 +14,8 @@ export const userSchema = {
       type: 'string'
     },
     email: { type: 'string' },
-    password: { type: 'string' }
+    password: { type: 'string' },
+    avatar: { type: 'string' }
   }
 }
 export const userValidator = getValidator(userSchema, dataValidator)
@@ -30,14 +31,26 @@ export const userDataSchema = {
   $id: 'UserData',
   type: 'object',
   additionalProperties: false,
-  required: [],
+  required: ['email', 'password', 'avatar'],
+
   properties: {
     ...userSchema.properties
   }
 }
 export const userDataValidator = getValidator(userDataSchema, dataValidator)
 export const userDataResolver = resolve({
-  password: passwordHash({ strategy: 'local' })
+  password: passwordHash({ strategy: 'local' }),
+  avatar: async (value, user) => {
+    // If the user passed an avatar image, use it
+    if (value !== undefined) {
+      return value
+    }
+
+    // Gravatar uses MD5 hashes from an email address to get the image
+    const hash = crypto.createHash('md5').update(user.email.toLowerCase()).digest('hex')
+    // Return the full avatar URL
+    return `https://s.gravatar.com/avatar/${hash}?s=60`
+  }
 })
 
 // Schema for updating existing users
